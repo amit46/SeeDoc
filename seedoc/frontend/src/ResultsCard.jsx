@@ -75,7 +75,12 @@ export default function ResultsCard({ result, onStartOver }) {
       </div>
 
       {showBooking && (
-        <BookingModal urgency={result.urgency} onClose={() => setShowBooking(false)} />
+        <BookingModal
+          urgency={result.urgency}
+          patientName={result.patient?.name ?? "Patient"}
+          chiefComplaint={result.carePathway ?? ""}
+          onClose={() => setShowBooking(false)}
+        />
       )}
     </div>
   );
