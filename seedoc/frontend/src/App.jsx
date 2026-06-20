@@ -3,17 +3,45 @@ import LoginPage from "./LoginPage";
 import PatientFlow from "./PatientFlow";
 import PhysicianDashboard from "./PhysicianDashboard";
 
+function load(key, fallback = null) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function save(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
 export default function App() {
-  const [role, setRole] = useState(null); // null | "patient" | "doctor"
-  const [triageResult, setTriageResult] = useState(null);
-  const [chiefComplaint, setChiefComplaint] = useState("");
+  const [role, setRole] = useState(() => load("seedoc_role"));
+  const [triageResult, setTriageResult] = useState(() => load("seedoc_triage"));
+  const [chiefComplaint, setChiefComplaint] = useState(() => load("seedoc_complaint", ""));
+
+  function handleLogin(r) {
+    setRole(r);
+    save("seedoc_role", r);
+  }
 
   function handleLogout() {
     setRole(null);
+    localStorage.removeItem("seedoc_role");
+  }
+
+  function handleResult(result, complaint) {
+    setTriageResult(result);
+    setChiefComplaint(complaint);
+    save("seedoc_triage", result);
+    save("seedoc_complaint", complaint);
   }
 
   if (!role) {
-    return <LoginPage onLogin={setRole} />;
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   return (
@@ -50,12 +78,7 @@ export default function App() {
 
       <main className="app-main">
         {role === "patient" ? (
-          <PatientFlow
-            onResult={(result, complaint) => {
-              setTriageResult(result);
-              setChiefComplaint(complaint);
-            }}
-          />
+          <PatientFlow onResult={handleResult} savedResult={triageResult} />
         ) : (
           <PhysicianDashboard result={triageResult} chiefComplaint={chiefComplaint} />
         )}

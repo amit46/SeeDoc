@@ -5,12 +5,13 @@ import ResultsCard from "./ResultsCard";
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function PatientFlow({ onResult }) {
-  const [step, setStep] = useState(1);
+export default function PatientFlow({ onResult, savedResult }) {
+  // If a prior result exists, start on step 3 so it's restored on refresh
+  const [step, setStep] = useState(savedResult ? 3 : 1);
   const [loading, setLoading] = useState(false);
   const [intake, setIntake] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(savedResult);
 
   async function handleIntake({ patientId, chiefComplaint }) {
     setLoading(true);
@@ -52,6 +53,15 @@ export default function PatientFlow({ onResult }) {
     }
   }
 
+  function handleStartOver() {
+    setResult(null);
+    setIntake(null);
+    setQuestions([]);
+    setStep(1);
+    // Clear saved triage so physician dashboard resets too
+    onResult(null, "");
+  }
+
   if (loading) {
     return (
       <div className="card loading-state">
@@ -66,5 +76,5 @@ export default function PatientFlow({ onResult }) {
 
   if (step === 1) return <IntakeForm onSubmit={handleIntake} />;
   if (step === 2) return <FollowUpQs questions={questions} onSubmit={handleFollowUp} />;
-  return <ResultsCard result={result} />;
+  return <ResultsCard result={result} onStartOver={handleStartOver} />;
 }

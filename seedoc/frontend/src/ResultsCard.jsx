@@ -12,7 +12,7 @@ const SEVERITY_ICON = { low: "🟢", medium: "🟡", high: "🟠", critical: "�
 
 const EMERGENCY_URGENCIES = ["emergency (call 911)", "urgent (same day)"];
 
-export default function ResultsCard({ result }) {
+export default function ResultsCard({ result, onStartOver }) {
   const [showBooking, setShowBooking] = useState(false);
 
   const isEmergency = EMERGENCY_URGENCIES.includes(result.urgency);
@@ -67,6 +67,12 @@ export default function ResultsCard({ result }) {
           </button>
         </div>
       )}
+
+      <div style={{ marginTop: "1rem", textAlign: "center" }}>
+        <button className="btn btn-outline" onClick={onStartOver}>
+          ↩ Start New Assessment
+        </button>
+      </div>
 
       {showBooking && (
         <BookingModal urgency={result.urgency} onClose={() => setShowBooking(false)} />
