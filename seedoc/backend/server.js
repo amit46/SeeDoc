@@ -100,6 +100,22 @@ app.post("/analyze", async (req, res) => {
   }
 });
 
+// ── Patient self-service updates ─────────────────────────────────────────────
+
+app.patch("/patients/:id/family-history", async (req, res) => {
+  const { id } = req.params;
+  const { family_history } = req.body;
+  if (typeof family_history !== "string") {
+    return res.status(400).json({ error: "family_history must be a string" });
+  }
+  const { error } = await supabase
+    .from("patients")
+    .update({ family_history })
+    .eq("id", id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
 // ── Appointments ──────────────────────────────────────────────────────────────
 
 app.get("/appointments", async (_req, res) => {

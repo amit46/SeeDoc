@@ -32,6 +32,11 @@ export default function App() {
     localStorage.removeItem("seedoc_patient");
   }
 
+  function handlePatientUpdate(updatedPatient) {
+    setPatient(updatedPatient);
+    save("seedoc_patient", updatedPatient);
+  }
+
   function handleResult(result, complaint) {
     setTriageResult(result);
     setChiefComplaint(complaint);
@@ -80,6 +85,7 @@ export default function App() {
           <PatientFlow
             patient={patient}
             onResult={handleResult}
+            onPatientUpdate={handlePatientUpdate}
             savedResult={triageResult}
           />
         ) : (

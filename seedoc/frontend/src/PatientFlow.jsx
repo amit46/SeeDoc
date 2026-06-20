@@ -5,7 +5,7 @@ import ResultsCard from "./ResultsCard";
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function PatientFlow({ patient, onResult, savedResult }) {
+export default function PatientFlow({ patient, onResult, onPatientUpdate, savedResult }) {
   const [step, setStep] = useState(savedResult ? 3 : 1);
   const [loading, setLoading] = useState(false);
   const [intake, setIntake] = useState(null);
@@ -72,7 +72,7 @@ export default function PatientFlow({ patient, onResult, savedResult }) {
     );
   }
 
-  if (step === 1) return <IntakeForm patient={patient} onSubmit={handleIntake} />;
+  if (step === 1) return <IntakeForm patient={patient} onSubmit={handleIntake} onPatientUpdate={onPatientUpdate} />;
   if (step === 2) return <FollowUpQs questions={questions} onSubmit={handleFollowUp} />;
   return <ResultsCard result={result} onStartOver={handleStartOver} />;
 }
