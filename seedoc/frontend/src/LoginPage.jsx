@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Logo from "./Logo";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -36,7 +37,9 @@ export default function LoginPage({ onLogin }) {
     return (
       <div className="login-landing">
         <div className="login-brand">
-          <div className="login-logo-icon">S</div>
+          <div style={{ marginBottom: "1rem" }}>
+          <Logo size={64} showText={false} markColor="#ffffff" plusColor="#15433a" />
+        </div>
           <h1 className="login-logo-text">SeeDoc</h1>
           <p className="login-tagline">AI-Powered Patient Triage &amp; Appointment Booking</p>
         </div>
@@ -62,7 +65,9 @@ export default function LoginPage({ onLogin }) {
   return (
     <div className="login-landing">
       <div className="login-brand">
-        <div className="login-logo-icon">S</div>
+        <div style={{ marginBottom: "1rem" }}>
+          <Logo size={64} showText={false} markColor="#ffffff" plusColor="#15433a" />
+        </div>
         <h1 className="login-logo-text">SeeDoc</h1>
       </div>
 

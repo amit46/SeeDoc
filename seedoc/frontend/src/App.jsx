@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Logo from "./Logo";
 import LoginPage from "./LoginPage";
 import PatientFlow from "./PatientFlow";
 import PhysicianDashboard from "./PhysicianDashboard";
@@ -54,26 +55,20 @@ export default function App() {
   return (
     <>
       <header className="app-header">
-        <div className="app-logo">
-          <div className="app-logo-icon">S</div>
-          <div>
-            <span className="app-logo-text">SeeDoc</span>
-            <span className="app-logo-sub">AI Patient Triage</span>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <span style={{ fontSize: "0.82rem", color: "#94a3b8" }}>
-            {role === "patient"
-              ? `🧑‍⚕️ ${patient?.name ?? "Patient"}`
-              : "👨‍⚕️ Physician Dashboard"}
+        <Logo size={34} />
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <span
+            style={{
+              fontSize: "0.82rem", fontWeight: 500, color: "var(--teal-dark)",
+              background: "var(--teal-light)", padding: "0.35rem 0.9rem", borderRadius: "20px",
+            }}
+          >
+            {role === "patient" ? patient?.name ?? "Patient" : "Physician Dashboard"}
           </span>
           <button
             onClick={handleLogout}
-            style={{
-              background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px",
-              color: "#94a3b8", padding: "0.35rem 0.85rem", cursor: "pointer",
-              fontSize: "0.82rem", fontFamily: "inherit",
-            }}
+            className="btn btn-outline"
+            style={{ fontSize: "0.8rem", padding: "0.42rem 0.95rem" }}
           >
             Sign Out
           </button>
