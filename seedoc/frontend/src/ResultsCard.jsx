@@ -1,32 +1,16 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 
-const SEVERITY_CLASS = {
-  low: "severity-low",
-  medium: "severity-medium",
-  high: "severity-high",
-  critical: "severity-critical",
-};
-
 const SEVERITY_ICON = { low: "🟢", medium: "🟡", high: "🟠", critical: "🔴" };
-
 const EMERGENCY_URGENCIES = ["emergency (call 911)", "urgent (same day)"];
 
 export default function ResultsCard({ result, onStartOver }) {
   const [showBooking, setShowBooking] = useState(false);
-
   const isEmergency = EMERGENCY_URGENCIES.includes(result.urgency);
+  const tone = ["low", "medium", "high", "critical"].includes(result.severity) ? result.severity : "medium";
 
   return (
     <div>
-      <div className="step-indicator" style={{ marginBottom: "1.5rem" }}>
-        <div className="step-dot done">✓</div>
-        <div className="step-line done" />
-        <div className="step-dot done">✓</div>
-        <div className="step-line done" />
-        <div className="step-dot active">3</div>
-      </div>
-
       {isEmergency && (
         <div className="urgency-banner">
           <span style={{ fontSize: "1.2rem" }}>🚨</span>
@@ -34,14 +18,15 @@ export default function ResultsCard({ result, onStartOver }) {
         </div>
       )}
 
-      <div className="card">
-        <div className="results-header">
-          <span className={`severity-badge ${SEVERITY_CLASS[result.severity] || "severity-medium"}`}>
-            {SEVERITY_ICON[result.severity]} {result.severity}
-          </span>
-          <span className="urgency-tag">Urgency: <strong>{result.urgency}</strong></span>
+      <div className={`results-hero tone-${tone}`}>
+        <div>
+          <div className="results-hero-severity">{result.severity} priority</div>
+          <div className="results-hero-urgency">Recommended timing: {result.urgency}</div>
         </div>
+        <div className="results-hero-badge">{SEVERITY_ICON[result.severity]}</div>
+      </div>
 
+      <div className="results-body">
         <div className="form-group">
           <p className="section-label">Recommended Care Pathway</p>
           <div className="care-pathway-box">{result.carePathway}</div>
@@ -60,15 +45,12 @@ export default function ResultsCard({ result, onStartOver }) {
         </div>
       </div>
 
-      {!isEmergency && (
-        <div style={{ marginTop: "1.25rem", textAlign: "center" }}>
+      <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center" }}>
+        {!isEmergency && (
           <button className="btn btn-primary" onClick={() => setShowBooking(true)}>
-            📅 Book an Appointment
+            📅 Request an Appointment
           </button>
-        </div>
-      )}
-
-      <div style={{ marginTop: "1rem", textAlign: "center" }}>
+        )}
         <button className="btn btn-outline" onClick={onStartOver}>
           ↩ Start New Assessment
         </button>

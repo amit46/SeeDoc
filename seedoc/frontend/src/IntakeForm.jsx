@@ -14,7 +14,7 @@ export default function IntakeForm({ patient, onSubmit, onPatientUpdate }) {
   const [showFamilyHistory, setShowFamilyHistory] = useState(false);
   const [familyHistory, setFamilyHistory] = useState(patient?.family_history ?? "");
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState(null); // null | "saved" | "error"
+  const [saveStatus, setSaveStatus] = useState(null);
 
   async function handleSaveFamilyHistory() {
     setSaving(true);
@@ -43,98 +43,70 @@ export default function IntakeForm({ patient, onSubmit, onPatientUpdate }) {
   }
 
   return (
-    <div>
-      {/* ── Patient profile card ── */}
-      <div className="card" style={{ marginBottom: "1.25rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
-          <div>
-            <p style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "var(--gray-500)", marginBottom: "0.3rem" }}>Your Profile</p>
-            <p style={{ fontWeight: 700, color: "var(--navy)", fontSize: "1.05rem" }}>{patient?.name}</p>
-            <p style={{ fontSize: "0.83rem", color: "var(--gray-500)", marginTop: "0.15rem" }}>
-              {patient?.age}{patient?.sex} &nbsp;·&nbsp; {Array.isArray(patient?.conditions) ? patient.conditions.join(", ") : patient?.conditions}
-            </p>
+    <div className="card">
+      <h2 className="intake-heading">What brings you in today?</h2>
+      <p className="intake-subheading">
+        Describe your main concern in your own words. Our AI reads your full record before responding.
+      </p>
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="complaint">Chief complaint</label>
+          <textarea
+            id="complaint"
+            placeholder="e.g. I've been feeling unusually tired and short of breath this week…"
+            value={chiefComplaint}
+            onChange={(e) => setChiefComplaint(e.target.value)}
+          />
+          <div className="quick-fills">
+            {QUICK_FILLS.map((q) => (
+              <button key={q} type="button" className="quick-fill-btn" onClick={() => setChiefComplaint(q)}>
+                {q}
+              </button>
+            ))}
           </div>
-          <button
-            type="button"
-            className={`btn ${showFamilyHistory ? "btn-primary" : "btn-outline"}`}
-            style={{ fontSize: "0.82rem", padding: "0.45rem 1rem" }}
-            onClick={() => setShowFamilyHistory(v => !v)}
-          >
-            {showFamilyHistory ? "▲ Close" : "✏️ Edit Family History"}
-          </button>
         </div>
 
-        {/* ── Editable family history ── */}
+        <button type="submit" className="btn btn-primary" disabled={!chiefComplaint.trim()}>
+          Continue →
+        </button>
+      </form>
+
+      <div style={{ marginTop: "1.5rem", borderTop: "1px dashed var(--sage-border)", paddingTop: "1.25rem" }}>
+        <button
+          type="button"
+          onClick={() => setShowFamilyHistory((v) => !v)}
+          style={{
+            background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+            fontSize: "0.85rem", fontWeight: 600, color: "var(--teal)", display: "flex",
+            alignItems: "center", gap: "0.4rem", padding: 0,
+          }}
+        >
+          {showFamilyHistory ? "▲" : "✏️"} Update family history
+        </button>
+
         {showFamilyHistory && (
-          <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--gray-200)", paddingTop: "1.25rem" }}>
-            <p style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "var(--gray-500)", marginBottom: "0.5rem" }}>
-              Family History
-            </p>
+          <div style={{ marginTop: "1rem" }}>
             <p style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
-              You can update this if a family member has received a new diagnosis or health development. This information is used by AI triage to flag hereditary risks.
+              Add any new diagnoses or health developments in your family. This helps the AI flag hereditary risks.
             </p>
             <textarea
-              rows={8}
+              rows={7}
               value={familyHistory}
               onChange={(e) => { setFamilyHistory(e.target.value); setSaveStatus(null); }}
               placeholder="e.g. Mother recently diagnosed with Type 2 diabetes at age 65…"
-              style={{ fontFamily: "inherit", fontSize: "0.85rem", lineHeight: 1.65 }}
+              style={{ fontSize: "0.85rem", lineHeight: 1.6 }}
             />
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.75rem" }}>
-              <button
-                type="button"
-                className="btn btn-primary"
-                style={{ fontSize: "0.85rem", padding: "0.5rem 1.1rem" }}
-                onClick={handleSaveFamilyHistory}
-                disabled={saving || familyHistory === patient?.family_history}
-              >
+              <button type="button" className="btn btn-primary" style={{ fontSize: "0.85rem", padding: "0.5rem 1.1rem" }}
+                onClick={handleSaveFamilyHistory} disabled={saving || familyHistory === patient?.family_history}>
                 {saving ? "Saving…" : "Save Changes"}
               </button>
-              {saveStatus === "saved" && (
-                <span style={{ fontSize: "0.82rem", color: "var(--green)", fontWeight: 600 }}>✓ Saved</span>
-              )}
-              {saveStatus === "error" && (
-                <span style={{ fontSize: "0.82rem", color: "var(--red)", fontWeight: 600 }}>Failed to save. Try again.</span>
-              )}
+              {saveStatus === "saved" && <span style={{ fontSize: "0.82rem", color: "var(--green)", fontWeight: 600 }}>✓ Saved</span>}
+              {saveStatus === "error" && <span style={{ fontSize: "0.82rem", color: "var(--red)", fontWeight: 600 }}>Failed — try again.</span>}
             </div>
           </div>
         )}
-      </div>
-
-      {/* ── Intake form ── */}
-      <div className="card">
-        <h2 className="card-title">Tell us why you're coming in</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="complaint">Chief complaint</label>
-            <textarea
-              id="complaint"
-              placeholder="Describe your main concern in your own words…"
-              value={chiefComplaint}
-              onChange={(e) => setChiefComplaint(e.target.value)}
-            />
-            <div className="quick-fills">
-              {QUICK_FILLS.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  className="quick-fill-btn"
-                  onClick={() => setChiefComplaint(q)}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={!chiefComplaint.trim()}
-          >
-            Continue →
-          </button>
-        </form>
       </div>
     </div>
   );

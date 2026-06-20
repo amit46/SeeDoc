@@ -16,17 +16,9 @@ export default function FollowUpQs({ questions, onSubmit }) {
 
   return (
     <div className="card">
-      <div className="step-indicator">
-        <div className="step-dot done">✓</div>
-        <div className="step-line done" />
-        <div className="step-dot active">2</div>
-        <div className="step-line" />
-        <div className="step-dot">3</div>
-      </div>
-
-      <h2 className="card-title">A few quick follow-up questions</h2>
-      <p style={{ fontSize: "0.85rem", color: "var(--gray-500)", marginBottom: "1.5rem" }}>
-        Step 2 of 3 — Your answers help us assess urgency accurately.
+      <h2 className="intake-heading">A few quick questions</h2>
+      <p className="intake-subheading">
+        Your answers help us assess urgency accurately. These were generated specifically from your history.
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -43,12 +35,8 @@ export default function FollowUpQs({ questions, onSubmit }) {
           </div>
         ))}
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={!allAnswered}
-        >
-          Submit & Get Assessment →
+        <button type="submit" className="btn btn-primary" disabled={!allAnswered}>
+          Submit &amp; Get Assessment →
         </button>
       </form>
     </div>
