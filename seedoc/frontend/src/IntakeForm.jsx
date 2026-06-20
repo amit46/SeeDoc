@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
-
-const API = import.meta.env.VITE_API_URL;
+import { useState } from "react";
 
 const QUICK_FILLS = [
   "Fatigue and cough",
@@ -9,45 +7,27 @@ const QUICK_FILLS = [
   "Headache and dizziness",
 ];
 
-export default function IntakeForm({ onSubmit }) {
-  const [patients, setPatients] = useState([]);
-  const [patientId, setPatientId] = useState("");
+export default function IntakeForm({ patient, onSubmit }) {
   const [chiefComplaint, setChiefComplaint] = useState("");
-
-  useEffect(() => {
-    fetch(`${API}/patients`)
-      .then((r) => r.json())
-      .then((data) => {
-        setPatients(data);
-        if (data.length) setPatientId(data[0].id);
-      });
-  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!patientId || !chiefComplaint.trim()) return;
-    onSubmit({ patientId, chiefComplaint: chiefComplaint.trim() });
+    if (!chiefComplaint.trim()) return;
+    onSubmit({ chiefComplaint: chiefComplaint.trim() });
   }
 
   return (
     <div className="card">
+      <div style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--gray-50)", borderRadius: "8px", border: "1px solid var(--gray-200)" }}>
+        <p style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "var(--gray-500)", marginBottom: "0.35rem" }}>Logged in as</p>
+        <p style={{ fontWeight: 700, color: "var(--navy)", fontSize: "1rem" }}>{patient?.name}</p>
+        <p style={{ fontSize: "0.82rem", color: "var(--gray-500)" }}>
+          {patient?.age}{patient?.sex} · {patient?.conditions?.join(", ")}
+        </p>
+      </div>
+
       <h2 className="card-title">Tell us why you're coming in</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="patient-select">Select your profile</label>
-          <select
-            id="patient-select"
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-          >
-            {patients.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} — {p.age}{p.sex}, {p.conditions.join(", ")}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="form-group">
           <label htmlFor="complaint">Chief complaint</label>
           <textarea
@@ -73,7 +53,7 @@ export default function IntakeForm({ onSubmit }) {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!patientId || !chiefComplaint.trim()}
+          disabled={!chiefComplaint.trim()}
         >
           Continue →
         </button>

@@ -1,12 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-function loadAppointments() {
-  try {
-    return JSON.parse(localStorage.getItem("seedoc_appointments") || "[]");
-  } catch {
-    return [];
-  }
-}
+const API = import.meta.env.VITE_API_URL;
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -19,14 +13,20 @@ export default function AppointmentCalendar() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selected, setSelected] = useState(null);
+  const [appointments, setAppointments] = useState([]);
 
-  const appointments = loadAppointments();
+  useEffect(() => {
+    fetch(`${API}/appointments`)
+      .then((r) => r.json())
+      .then((data) => setAppointments(Array.isArray(data) ? data : []))
+      .catch(() => setAppointments([]));
+  }, []);
 
-  // Build a map of isoDate → appointments[]
   const apptMap = {};
   for (const a of appointments) {
-    if (!apptMap[a.isoDate]) apptMap[a.isoDate] = [];
-    apptMap[a.isoDate].push(a);
+    const key = a.iso_date;
+    if (!apptMap[key]) apptMap[key] = [];
+    apptMap[key].push(a);
   }
 
   const firstDay = new Date(year, month, 1).getDay();
@@ -64,9 +64,7 @@ export default function AppointmentCalendar() {
       </div>
 
       <div className="cal-grid">
-        {DAYS.map(d => (
-          <div key={d} className="cal-day-name">{d}</div>
-        ))}
+        {DAYS.map(d => <div key={d} className="cal-day-name">{d}</div>)}
         {cells.map((day, i) => {
           if (!day) return <div key={`e-${i}`} />;
           const iso = isoFor(day);
@@ -93,18 +91,16 @@ export default function AppointmentCalendar() {
 
       {selected && (
         <div className="cal-detail">
-          <p className="cal-detail-date">
-            {MONTHS[month]} {selected}, {year}
-          </p>
+          <p className="cal-detail-date">{MONTHS[month]} {selected}, {year}</p>
           {selectedAppts.length === 0 ? (
             <p className="cal-no-appt">No appointments this day.</p>
           ) : (
             selectedAppts.map((a, i) => (
               <div key={i} className="cal-appt-card">
                 <div className="cal-appt-time">{a.time}</div>
-                <div className="cal-appt-patient">{a.patientName}</div>
-                <div className="cal-appt-complaint">{a.chiefComplaint}</div>
-                <div className="cal-appt-confirm">Conf. #{a.confirmNum}</div>
+                <div className="cal-appt-patient">{a.patient_name}</div>
+                <div className="cal-appt-complaint">{a.chief_complaint}</div>
+                <div className="cal-appt-confirm">Conf. #{a.confirm_num}</div>
               </div>
             ))
           )}

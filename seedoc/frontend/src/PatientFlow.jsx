@@ -5,24 +5,23 @@ import ResultsCard from "./ResultsCard";
 
 const API = import.meta.env.VITE_API_URL;
 
-export default function PatientFlow({ onResult, savedResult }) {
-  // If a prior result exists, start on step 3 so it's restored on refresh
+export default function PatientFlow({ patient, onResult, savedResult }) {
   const [step, setStep] = useState(savedResult ? 3 : 1);
   const [loading, setLoading] = useState(false);
   const [intake, setIntake] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [result, setResult] = useState(savedResult);
 
-  async function handleIntake({ patientId, chiefComplaint }) {
+  async function handleIntake({ chiefComplaint }) {
     setLoading(true);
     try {
       const res = await fetch(`${API}/questions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patientId, chiefComplaint }),
+        body: JSON.stringify({ patientId: patient.id, chiefComplaint }),
       });
       const data = await res.json();
-      setIntake({ patientId, chiefComplaint });
+      setIntake({ patientId: patient.id, chiefComplaint });
       setQuestions(data.questions);
       setStep(2);
     } catch (err) {
@@ -58,7 +57,6 @@ export default function PatientFlow({ onResult, savedResult }) {
     setIntake(null);
     setQuestions([]);
     setStep(1);
-    // Clear saved triage so physician dashboard resets too
     onResult(null, "");
   }
 
@@ -74,7 +72,7 @@ export default function PatientFlow({ onResult, savedResult }) {
     );
   }
 
-  if (step === 1) return <IntakeForm onSubmit={handleIntake} />;
+  if (step === 1) return <IntakeForm patient={patient} onSubmit={handleIntake} />;
   if (step === 2) return <FollowUpQs questions={questions} onSubmit={handleFollowUp} />;
   return <ResultsCard result={result} onStartOver={handleStartOver} />;
 }

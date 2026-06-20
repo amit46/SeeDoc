@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API = import.meta.env.VITE_API_URL;
+
 function generateSlots(urgency) {
   const now = new Date();
   const slots = [];
@@ -19,7 +21,6 @@ function generateSlots(urgency) {
     d.setDate(d.getDate() + startDay + Math.floor((i / count) * spreadDays));
     slots.push({
       date: d.toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" }),
-      // Store ISO date string for calendar lookup
       isoDate: d.toISOString().slice(0, 10),
       time: times[i % times.length],
     });
@@ -27,30 +28,34 @@ function generateSlots(urgency) {
   return slots;
 }
 
-function saveAppointment(slot, patientName, chiefComplaint, confirmNum) {
-  try {
-    const existing = JSON.parse(localStorage.getItem("seedoc_appointments") || "[]");
-    existing.push({
-      id: confirmNum,
-      patientName,
-      chiefComplaint,
-      date: slot.date,
-      isoDate: slot.isoDate,
-      time: slot.time,
-      confirmNum,
-    });
-    localStorage.setItem("seedoc_appointments", JSON.stringify(existing));
-  } catch {}
-}
-
-export default function BookingModal({ urgency, patientName, chiefComplaint, onClose }) {
+export default function BookingModal({ urgency, patientId, patientName, chiefComplaint, onClose }) {
   const [booked, setBooked] = useState(null);
+  const [saving, setSaving] = useState(false);
   const slots = generateSlots(urgency);
   const confirmNum = Math.floor(100000 + Math.random() * 900000);
 
-  function handleBook(slot) {
-    saveAppointment(slot, patientName, chiefComplaint, confirmNum);
-    setBooked(slot);
+  async function handleBook(slot) {
+    setSaving(true);
+    try {
+      await fetch(`${API}/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientId,
+          patientName,
+          chiefComplaint,
+          date: slot.date,
+          isoDate: slot.isoDate,
+          time: slot.time,
+          confirmNum,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save appointment:", err);
+    } finally {
+      setSaving(false);
+      setBooked(slot);
+    }
   }
 
   if (booked) {
@@ -62,7 +67,7 @@ export default function BookingModal({ urgency, patientName, chiefComplaint, onC
             <div className="confirm-time">{booked.date} at {booked.time}</div>
             <div className="confirm-code">Confirmation #{confirmNum}</div>
             <p style={{ fontSize: "0.85rem", color: "var(--gray-500)", marginBottom: "1.5rem" }}>
-              Your appointment has been requested. You will receive a confirmation by email.
+              Your appointment has been requested. It will appear in the physician's calendar.
             </p>
             <button className="btn btn-primary" onClick={onClose}>Done</button>
           </div>
@@ -78,7 +83,7 @@ export default function BookingModal({ urgency, patientName, chiefComplaint, onC
         <p className="modal-sub">Select an available time slot</p>
         <div className="slot-grid">
           {slots.map((s, i) => (
-            <button key={i} className="slot-btn" onClick={() => handleBook(s)}>
+            <button key={i} className="slot-btn" onClick={() => handleBook(s)} disabled={saving}>
               <span className="slot-date">{s.date}</span>
               <span className="slot-time">{s.time}</span>
             </button>

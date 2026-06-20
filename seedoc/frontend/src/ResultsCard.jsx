@@ -77,6 +77,7 @@ export default function ResultsCard({ result, onStartOver }) {
       {showBooking && (
         <BookingModal
           urgency={result.urgency}
+          patientId={result.patient?.id}
           patientName={result.patient?.name ?? "Patient"}
           chiefComplaint={result.carePathway ?? ""}
           onClose={() => setShowBooking(false)}

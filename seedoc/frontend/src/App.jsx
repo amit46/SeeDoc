@@ -4,45 +4,47 @@ import PatientFlow from "./PatientFlow";
 import PhysicianDashboard from "./PhysicianDashboard";
 
 function load(key, fallback = null) {
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : fallback;
-  } catch {
-    return fallback;
-  }
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
 }
 
 function save(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
 }
 
 export default function App() {
   const [role, setRole] = useState(() => load("seedoc_role"));
+  const [patient, setPatient] = useState(() => load("seedoc_patient"));
   const [triageResult, setTriageResult] = useState(() => load("seedoc_triage"));
   const [chiefComplaint, setChiefComplaint] = useState(() => load("seedoc_complaint", ""));
 
-  function handleLogin(r) {
+  function handleLogin(r, patientData) {
     setRole(r);
+    setPatient(patientData);
     save("seedoc_role", r);
+    save("seedoc_patient", patientData);
   }
 
   function handleLogout() {
     setRole(null);
+    setPatient(null);
     localStorage.removeItem("seedoc_role");
+    localStorage.removeItem("seedoc_patient");
   }
 
   function handleResult(result, complaint) {
     setTriageResult(result);
     setChiefComplaint(complaint);
-    save("seedoc_triage", result);
-    save("seedoc_complaint", complaint);
+    if (result) {
+      save("seedoc_triage", result);
+      save("seedoc_complaint", complaint);
+    } else {
+      localStorage.removeItem("seedoc_triage");
+      localStorage.removeItem("seedoc_complaint");
+    }
   }
 
-  if (!role) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
+  if (!role) return <LoginPage onLogin={handleLogin} />;
 
   return (
     <>
@@ -56,19 +58,16 @@ export default function App() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <span style={{ fontSize: "0.82rem", color: "#94a3b8" }}>
-            {role === "patient" ? "🧑‍⚕️ Patient Portal" : "👨‍⚕️ Physician Dashboard"}
+            {role === "patient"
+              ? `🧑‍⚕️ ${patient?.name ?? "Patient"}`
+              : "👨‍⚕️ Physician Dashboard"}
           </span>
           <button
             onClick={handleLogout}
             style={{
-              background: "rgba(255,255,255,0.1)",
-              border: "none",
-              borderRadius: "6px",
-              color: "#94a3b8",
-              padding: "0.35rem 0.85rem",
-              cursor: "pointer",
-              fontSize: "0.82rem",
-              fontFamily: "inherit",
+              background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px",
+              color: "#94a3b8", padding: "0.35rem 0.85rem", cursor: "pointer",
+              fontSize: "0.82rem", fontFamily: "inherit",
             }}
           >
             Sign Out
@@ -78,7 +77,11 @@ export default function App() {
 
       <main className="app-main">
         {role === "patient" ? (
-          <PatientFlow onResult={handleResult} savedResult={triageResult} />
+          <PatientFlow
+            patient={patient}
+            onResult={handleResult}
+            savedResult={triageResult}
+          />
         ) : (
           <PhysicianDashboard result={triageResult} chiefComplaint={chiefComplaint} />
         )}
