@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import supabase from "./db.js";
-import { generateFollowUpQuestions, analyzePatient } from "./claude.js";
+import { generateFollowUpQuestions, analyzePatient, populationScan } from "./claude.js";
 
 const app = express();
 app.use(cors());
@@ -165,6 +165,20 @@ app.patch("/appointments/:id", async (req, res) => {
   const { error } = await supabase.from("appointments").update(update).eq("id", req.params.id);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ ok: true });
+});
+
+// ── Proactive population scan ─────────────────────────────────────────────────
+
+app.get("/population-scan", async (_req, res) => {
+  try {
+    const { data: patients, error } = await supabase.from("patients").select("*");
+    if (error) return res.status(500).json({ error: error.message });
+    const result = await populationScan(patients);
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── Health records ────────────────────────────────────────────────────────────

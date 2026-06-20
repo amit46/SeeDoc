@@ -3,6 +3,17 @@ import Anthropic from "@anthropic-ai/sdk";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = "claude-sonnet-4-6";
 
+function parseJSON(text) {
+  let t = text.trim();
+  if (t.startsWith("```")) {
+    t = t.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  }
+  const first = t.indexOf("{");
+  const last = t.lastIndexOf("}");
+  if (first > 0 || last < t.length - 1) t = t.slice(first, last + 1);
+  return JSON.parse(t);
+}
+
 function buildPatientContext(patient) {
   return `PATIENT RECORD
 Name: ${patient.name} | Age: ${patient.age} | Sex: ${patient.sex}
@@ -32,7 +43,7 @@ Return ONLY valid JSON — no markdown, no explanation:
     ],
   });
 
-  return JSON.parse(response.content[0].text.trim());
+  return parseJSON(response.content[0].text);
 }
 
 export async function analyzePatient(patient, chiefComplaint, followUpAnswers) {
@@ -66,6 +77,45 @@ Return ONLY valid JSON matching this exact shape — no markdown, no explanation
     ],
   });
 
-  const result = JSON.parse(response.content[0].text.trim());
+  const result = parseJSON(response.content[0].text);
   return { patient, result };
+}
+
+export async function populationScan(patients) {
+  const panel = patients
+    .map((p, i) => `=== PATIENT ${i + 1} (id: ${p.id}) ===\n${buildPatientContext(p)}`)
+    .join("\n\n");
+
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2000,
+    system: `You are a proactive population-health AI for a family medicine practice. You are given the FULL records of every patient on a physician's panel.
+Your job is to proactively identify which patients need attention NOW — before they book — by detecting concerning trends, overdue screenings, diagnostic drift (signals missed across prior visits), and hereditary risks.
+Rank patients by clinical priority. Only include patients with a genuine actionable concern; a healthy patient with no issues can be marked riskLevel "low" with a brief note.
+Be specific and evidence-based: cite concrete data points from the record (lab trends, weight changes, overdue dates, family history).
+Return ONLY valid JSON — no markdown, no preamble — matching this exact shape:
+{
+  "summary": "one-sentence overview, e.g. '2 of 3 patients flagged for proactive follow-up.'",
+  "alerts": [
+    {
+      "patientId": "string (the id given)",
+      "patientName": "string",
+      "riskLevel": "critical|high|moderate|low",
+      "headline": "short clinical headline (<10 words)",
+      "evidence": ["concrete data point", "concrete data point"],
+      "reasoning": "2-3 sentence clinical rationale, including any missed/drift signal",
+      "recommendedAction": "specific next step the physician should take"
+    }
+  ]
+}
+Order alerts from highest to lowest riskLevel.`,
+    messages: [
+      {
+        role: "user",
+        content: `Physician panel — proactively scan all patients and rank who needs attention:\n\n${panel}`,
+      },
+    ],
+  });
+
+  return parseJSON(response.content[0].text);
 }

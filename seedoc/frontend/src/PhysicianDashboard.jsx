@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AppointmentCalendar from "./AppointmentCalendar";
 import HealthTrendChart from "./HealthTrendChart";
+import PriorityInbox from "./PriorityInbox";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -366,7 +367,7 @@ function AssessmentTab({ result, chiefComplaint }) {
 // ── Main physician dashboard ──────────────────────────────────────────────────
 
 export default function PhysicianDashboard({ result, chiefComplaint }) {
-  const [tab, setTab] = useState("requests");
+  const [tab, setTab] = useState("inbox");
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [showAddAppt, setShowAddAppt] = useState(false);
@@ -383,6 +384,7 @@ export default function PhysicianDashboard({ result, chiefComplaint }) {
   }, []);
 
   const TABS = [
+    { id: "inbox", label: "AI Inbox" },
     { id: "requests", label: "Requests", badge: pendingCount },
     { id: "calendar", label: "Calendar" },
     { id: "patients", label: "Patients" },
@@ -403,6 +405,10 @@ export default function PhysicianDashboard({ result, chiefComplaint }) {
       </div>
 
       {/* Tab content */}
+      {tab === "inbox" && (
+        <PriorityInbox />
+      )}
+
       {tab === "requests" && (
         <RequestsTab appointments={appointments} onAction={fetchAppointments} />
       )}
