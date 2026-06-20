@@ -1125,8 +1125,8 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.4px; }
   display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
 }
 .role-pick-card:hover .role-pick-icon { background: var(--white); }
-.role-pick-title { font-weight: 700; color: var(--navy); font-size: 0.98rem; }
-.role-pick-desc { font-size: 0.8rem; color: var(--gray-500); margin-top: 0.15rem; line-height: 1.4; }
+.role-pick-title { display: block; font-weight: 700; color: var(--navy); font-size: 0.98rem; }
+.role-pick-desc { display: block; font-size: 0.8rem; color: var(--gray-500); margin-top: 0.2rem; line-height: 1.4; }
 .role-pick-arrow { margin-left: auto; color: var(--teal); font-size: 1.1rem; }
 
 /* ── Patient two-column shell ── */
